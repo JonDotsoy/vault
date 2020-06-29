@@ -3,6 +3,10 @@
     "version": "0.1.0-beta.0",
     "description": "",
     "main": "index.js",
+    "engines": {
+        "node": ">=12.18.0"
+    },
+    "engineStrict": true,
     "scripts": {
         "prepare": "tsc",
         "test": "mocha -r ts-node/register src/**/*.spec.ts",
@@ -10,7 +14,8 @@
         "build:watch": "tsc --watch"
     },
     "keywords": [],
-    "author": "",
+    "author": "Jonathan Delgado <hi@jon.soy> (https://jon.soy)",
+    "runkitExample": "const { Vault, FileStore } = require(\"@jondotsoy/vault\");\n\nconst vault = await Vault.create({\n    store: new FileStore({ pathStore: 'f' }),\n    modulusLength: 512,\n});\n\nawait vault.saveConfigs({ a: 'hi' });\n\nawait vault.readConfig();",
     "license": "MIT",
     "devDependencies": {
         "@types/chai": "^4.2.11",
