@@ -4,6 +4,18 @@ Protect your data with a json crypto storage.
 
 ## How to use (API)
 
+**Install with npm**
+
+```sh
+npm i @jondotsoy/vault
+```
+
+and require the vault
+
+```ts
+import { Vault, FileStore } from '@jondotsoy/vault';
+```
+
 ```ts
 const vault = await Vault.create({
     store: new FileStore({ pathStore: 'FILEPATH' }),
