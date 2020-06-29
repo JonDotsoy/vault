@@ -1,0 +1,14 @@
+*.tgz
+*.ts
+*.vault
+.editorconfig
+tsconfig.json
+*.k*.json
+
+!*.js
+!*.js.map
+!*.d.ts
+
+*.spec.ts
+*.spec.d.ts
+*.spec.js
