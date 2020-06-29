@@ -2,7 +2,7 @@
 
 Protect your data with a json crypto storage.
 
-## How to use (API)
+## How to use (API)
 
 ```ts
 const vault = await Vault.create({
