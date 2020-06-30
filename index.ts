@@ -1,2 +1,2 @@
-export { Vault } from './src/domain/Vault/Vault';
-export { FileStore } from './src/domain/Store/FileStore';
+export { Vault } from './vault/Vault';
+export { FileStore } from './store/FileStore';

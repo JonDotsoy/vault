@@ -1,5 +1,5 @@
 import { Vault } from "./Vault";
-import { FileStore } from "../Store/FileStore";
+import { FileStore } from "../store/FileStore";
 import crypto from 'crypto';
 import chai, { expect } from 'chai';
 import { writeFileSync } from "fs";
