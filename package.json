@@ -13,7 +13,10 @@
         "test:watch": "nodemon --ext ts --exec mocha -r ts-node/register src/**/*.spec.ts",
         "build:watch": "tsc --watch"
     },
-    "keywords": [],
+    "keywords": [
+        "encryption",
+        "secret"
+    ],
     "author": "Jonathan Delgado <hi@jon.soy> (https://jon.soy)",
     "runkitExample": "const { Vault, FileStore } = require(\"@jondotsoy/vault\");\n\nconst vault = await Vault.create({\n    store: new FileStore({ pathStore: 'f' }),\n    modulusLength: 512,\n});\n\nawait vault.saveConfigs({ a: 'hi' });\n\nawait vault.readConfig();",
     "license": "MIT",
