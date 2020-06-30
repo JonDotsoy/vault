@@ -100,7 +100,7 @@ describe('Vault', () => {
             publicKey: publicKey,
         });
 
-        expect(await vault.readConfig()).property('option').is.a('string');
+        expect(await vault.readConfigs()).property('option').is.a('string');
     });
 
 });

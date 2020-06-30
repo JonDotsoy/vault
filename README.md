@@ -24,7 +24,7 @@ const vault = await Vault.create({
     publicKey: publicKey,
 });
 
-const configs = await vault.readConfig(); // [MyConfigs]
+const configs = await vault.readConfigs(); // [MyConfigs]
 ```
 
 ### Create a Vault
@@ -35,7 +35,7 @@ const vault = await Vault.create({
     modulusLength: 512,
 });
 
-const {publicKey, privateKey} = vault.export(); // MEgCQQC8QHhm1a3TEOO502VTldRTrI9UQ...
+const {publicKey, privateKey} = vault.export();
 
 publicKey; // MEgCQQC8QHhm1a3TEOO502VTldRTrI9UQ...
 privateKey; // MIIBOwIBAAJBALxAeGbVrdMQ47nTZVOV1FOsj1RDuKCnud...
@@ -54,6 +54,6 @@ const vault = await Vault.create({
     publicKey: publicKey,
 });
 
-await vault.readConfig(); // [MyConfigs]
+await vault.readConfigs(); // [MyConfigs]
 ```
 

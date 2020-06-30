@@ -35,7 +35,7 @@ export class Vault {
         return this.export();
     }
 
-    async readConfig() {
+    async readConfigs() {
         const bufferEncripted = await this.store.read();
         return JSON.parse(crypto.publicDecrypt(this.publicKey, bufferEncripted).toString());
     }
