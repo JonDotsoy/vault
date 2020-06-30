@@ -1,5 +1,7 @@
 # 📦🔐Vault
 
+[![Try @jondotsoy/vault on RunKit](https://badge.runkitcdn.com/@jondotsoy/vault.svg)](https://npm.runkit.com/@jondotsoy/vault)
+
 Protect your data with a json crypto storage.
 
 ## How to use (API)
