@@ -18,7 +18,7 @@
         "secret"
     ],
     "author": "Jonathan Delgado <hi@jon.soy> (https://jon.soy)",
-    "runkitExample": "const { Vault, FileStore } = require(\"@jondotsoy/vault\");\n\nconst vault = await Vault.create({\n    store: new FileStore({ pathStore: 'f' }),\n    modulusLength: 512,\n});\n\nawait vault.saveConfigs({ a: 'hi' });\n\nawait vault.readConfig();",
+    "runkitExample": "const { Vault, FileStore } = require(\"@jondotsoy/vault\");\n\nconst vault = await Vault.create({\n    store: new FileStore({ pathStore: 'f' }),\n    modulusLength: 512,\n});\n\nawait vault.saveConfigs({ a: 'hi' });\n\nawait vault.readConfigs();",
     "license": "MIT",
     "devDependencies": {
         "@types/chai": "^4.2.11",
