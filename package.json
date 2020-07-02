@@ -1,34 +1,48 @@
 {
-    "name": "@jondotsoy/vault",
-    "version": "0.1.1",
-    "description": "",
-    "main": "index.js",
-    "engines": {
-        "node": ">=12.18.0"
-    },
-    "engineStrict": true,
-    "scripts": {
-        "prepare": "tsc",
-        "test": "mocha -r ts-node/register src/**/*.spec.ts",
-        "test:watch": "nodemon --ext ts --exec mocha -r ts-node/register src/**/*.spec.ts",
-        "build:watch": "tsc --watch"
-    },
-    "keywords": [
-        "encryption",
-        "secret"
-    ],
-    "author": "Jonathan Delgado <hi@jon.soy> (https://jon.soy)",
-    "runkitExample": "const { Vault, FileStore } = require(\"@jondotsoy/vault\");\n\nconst vault = await Vault.create({\n    store: new FileStore({ pathStore: 'f' }),\n    modulusLength: 512,\n});\n\nawait vault.saveConfigs({ a: 'hi' });\n\nawait vault.readConfig();",
-    "license": "MIT",
-    "devDependencies": {
-        "@types/chai": "^4.2.11",
-        "@types/mocha": "^7.0.2",
-        "@types/node": "^14.0.14",
-        "chai": "^4.2.0",
-        "mocha": "^8.0.1",
-        "nodemon": "^2.0.4",
-        "ts-node": "^8.10.2",
-        "typescript": "^3.9.5"
-    },
-    "dependencies": {}
+  "name": "@jondotsoy/vault",
+  "version": "0.1.1",
+  "description": "",
+  "main": "index.js",
+  "bin": "bin/cli.js",
+  "engines": {
+    "node": ">=12.18.0"
+  },
+  "engineStrict": true,
+  "scripts": {
+    "prepare": "tsc",
+    "serve:repository": "node repository/Server",
+    "serve:repository:watch": "nodemon --exec npm run serve:repository",
+    "test": "mocha -r ts-node/register {vault,store,repository}/**/*.spec.ts",
+    "test:watch": "nodemon --ext ts --exec npm run test",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "lint": "npx prettier -c .",
+    "lint:write": "npx prettier -w ."
+  },
+  "keywords": [
+    "encryption",
+    "secret"
+  ],
+  "author": "Jonathan Delgado <hi@jon.soy> (https://jon.soy)",
+  "runkitExample": "const { Vault, FileStore } = require(\"@jondotsoy/vault\");\n\nconst vault = await Vault.create({\n    store: new FileStore({ pathStore: 'f' }),\n    modulusLength: 512,\n});\n\nawait vault.saveConfigs({ a: 'hi' });\n\nawait vault.readConfigs();",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/chai": "^4.2.12",
+    "@types/mocha": "^7.0.2",
+    "@types/node": "^14.11.2",
+    "chai": "^4.2.0",
+    "husky": "^4.3.0",
+    "mocha": "^8.1.3",
+    "nodemon": "^2.0.4",
+    "prettier": "^2.1.2",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.7"
+  },
+  "dependencies": {},
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint:write",
+      "pre-push": "npm test"
+    }
+  }
 }

@@ -1,0 +1,20 @@
+import { ID } from "./id"
+
+describe("ID", () => {
+  it("comparations", () => {
+    const ids = [
+      "003bac2c79555f9405706dd90a320a6b66786768767461",
+      "008ce8fb376d42234f3221b80a340a6b6678656a387577",
+      "00a9ddc46dafbd3467213bf50a340a6b66786567766a36",
+      "00ab709a6e563fbe5ae09cde0a340a6b66786566787a33",
+      "00bb46f9b89811b024bd40360a320a6b667864346b7230",
+      "010a59dde2ae8ee134a329140a340a6b6678667a387262",
+      "01d8e519846e792a1db1729b0a340a6b66786767696c6a",
+      "02502da1e88de9eb3b55c5b30a310a6b667774377a6e37",
+      "025af0630a56e5536363cb2c0a320a6b6677746e7a3135",
+      "027ae0dd05c432449ea9d9840a320a6b6678636a376777",
+    ].map(ID.from)
+
+    console.log("ids[3] === ids[3]", ids[4] > ids[3])
+  })
+})

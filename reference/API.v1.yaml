@@ -1,0 +1,134 @@
+openapi: 3.0.0
+info:
+  title: API
+  version: "1.0"
+  contact:
+    name: jonathan Delgado
+    url: "http://jon.soy"
+    email: hi@jon.soy
+  description: Vault Repository
+servers:
+  - url: "http://localhost:3000"
+paths:
+  "/vault/{vaultId}":
+    parameters:
+      - schema:
+          type: string
+        name: vaultId
+        in: path
+        required: true
+    get:
+      summary: Read remote configs
+      tags:
+        - vault
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vault"
+      operationId: get-vault-vaultId
+      description: Read remote configs
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: key
+          description: read key
+          required: true
+  /vault:
+    get:
+      summary: List vaults
+      tags: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Vault"
+                  continueToken:
+                    type: string
+                required:
+                  - result
+      operationId: get-vault
+      description: ""
+      parameters:
+        - schema:
+            type: number
+          in: query
+          name: limit
+        - schema:
+            type: string
+          in: query
+          name: continueToken
+    post:
+      summary: Publish new Vault
+      operationId: post-vault
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  publicKey:
+                    type: string
+                  privateKey:
+                    type: string
+                required:
+                  - id
+                  - publicKey
+      description: "Creare vault store, return de public key and private key if is create store"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - properties:
+                    vaultStore:
+                      type: string
+                      description: Vault Store on Base64
+                    modulusLength:
+                      type: number
+                      enum:
+                        - 512
+                        - 1024
+                        - 2048
+                        - 4096
+                      default: 512
+                      example: 512
+                  required:
+                    - vaultStore
+                - properties:
+                    vaultStore:
+                      type: string
+                    publicKey:
+                      type: string
+              type: object
+components:
+  schemas:
+    Vault:
+      title: Vault
+      type: object
+      properties:
+        id:
+          type: string
+        vaultStore:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - createdAt
+tags:
+  - name: vault
