@@ -4,6 +4,29 @@
 
 Protect your data with a json crypto storage. This is a opensource solution to shared configurations on cloud.
 
+**Sample**
+
+```ts
+import { Vault, RemoteStore } from "@jondotsoy/vault"
+
+const vaultPublicKey = process.env.VAULT_PUBLICKEY
+const vaultRemoteId = process.env.VAULT_REMOTE_ID
+const vaultRemoteReadKey = process.env.VAULT_REMOTE_READKEY
+
+const vault = await Vault.create<{ db: { uri: string } }>({
+  store: new RemoteStore({
+    id: vaultRemoteId,
+    readkey: vaultRemoteReadKey,
+  }),
+  publicKey: vaultPublicKey,
+});
+
+const configs = await vault.readConfigs();
+
+const mongoUri = configs.db.uri;
+// ...
+```
+
 ## How to use (API)
 
 **Install with npm**
@@ -56,3 +79,7 @@ const vault = await Vault.create({
 
 await vault.readConfigs() // [MyConfigs]
 ```
+
+## Remote Store
+
+Create, share

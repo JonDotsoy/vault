@@ -1,26 +1,38 @@
+import { throws } from "../lib/throws"
 import { RepositoryClient } from "../repository/RepositoryClient"
 import { KeyPair } from "../vault/KeyPair"
 import { Store } from "./Store.interface"
 
-interface RemoteStoreOptions {
+type RemoteStoreOptionsBase = {
   repositoryClient?: RepositoryClient
   id: string
-  publicKey: string
-  privateKey?: string
 }
 
+type RemoteStoreOptions = RemoteStoreOptionsBase & (
+  | {
+    readkey: string
+  }
+  | {
+    publicKey: string
+    privateKey?: string
+  }
+)
+
 export class RemoteStore implements Store {
-  constructor(private options: RemoteStoreOptions) {}
+  constructor(private options: RemoteStoreOptions) { }
 
   readonly repositoryClient =
     this.options.repositoryClient ?? new RepositoryClient()
   readonly id = this.options.id
-  readonly publicKey = this.options.publicKey
-  readonly privateKey = this.options.privateKey
-  readonly keyPair = KeyPair.resolve({
-    publicKey: this.publicKey,
-    privateKey: this.privateKey,
-  })
+  readonly readkey = 'readkey' in this.options ? this.options.readkey : undefined
+  readonly keyPair = 'publicKey' in this.options
+    ? KeyPair.resolve({
+      publicKey: this.options.publicKey,
+      privateKey: this.options.privateKey,
+    })
+    : undefined
+  readonly publicKey = this.keyPair?.then(k => k.publicKey)
+  readonly privateKey = this.keyPair?.then(k => k.privateKey)
 
   async write(update: Buffer): Promise<void> {
     const updateSign = await this.getUpdateSign()
@@ -33,22 +45,21 @@ export class RemoteStore implements Store {
     return res.vaultStore ? Buffer.from(res.vaultStore, "base64") : null
   }
 
-  async getSign(signBody: "read" | "update" | "delete") {
+  async genSign(signBody: "read" | "update" | "delete") {
     const keyPair = await this.keyPair
-    const readkey = await keyPair.createSigner(signBody).sign()
-    return readkey
+    return keyPair?.createSigner(signBody).sign() ?? throws(new Error('Is not posible create sign key'))
   }
 
   async getSignRead() {
-    return this.getSign("read")
+    return this.readkey ?? await this.genSign("read")
   }
 
   async getUpdateSign() {
-    return this.getSign("update")
+    return this.genSign("update")
   }
 
   async getSignDelete() {
-    return this.getSign("delete")
+    return this.genSign("delete")
   }
 
   hash(): Promise<string> {
@@ -60,7 +71,7 @@ export class RemoteStore implements Store {
 
     return {
       id: this.id,
-      ...keyPair.export(),
+      ...keyPair?.export(),
     }
   }
 

@@ -44,7 +44,7 @@ export class RepositoryClient {
     return JSON.parse(res.body.toString()) as {
       id: string
       createdAt: string
-      vaultStore: string
+      vaultStore?: string
     }
   }
 
