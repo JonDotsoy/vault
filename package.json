@@ -10,7 +10,7 @@
   "engineStrict": true,
   "scripts": {
     "prepare": "tsc",
-    "serve:repository": "node repository/Server",
+    "serve:repository": "npx . server",
     "serve:repository:watch": "nodemon --exec npm run serve:repository",
     "test": "mocha -r ts-node/register {vault,store,repository}/**/*.spec.ts",
     "test:watch": "nodemon --ext ts --exec npm run test",

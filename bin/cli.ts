@@ -1,77 +1,83 @@
+#!/usr/bin/env node
+
 import { EOL, homedir, tmpdir } from "os"
-import { KeyPair } from "../vault/KeyPair"
-import { fetch } from "../lib/fetch"
-import { VaultElement } from "./VaultElement"
 import { CommandCore } from "./CommandPath"
 import { spawnSync } from "child_process"
 import { randomBytes } from "crypto"
-import {
-  existsSync,
-  readFile,
-  readFileSync,
-  unlink,
-  unlinkSync,
-  writeFileSync,
-} from "fs"
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from "fs"
 import { Vault } from "../vault/Vault"
 import { RemoteStore } from "../stores/RemoteStore"
 import { throws } from "../lib/throws"
 import { promisify } from "util"
 import { vaultrcPath, vaultSchemaPath } from "./LocalStoreVaultConfigs"
 import path from "path"
+import { AppServer } from "../repository/AppServer"
 
 const argvVaultId = { label: "vault-id" }
 
 class CommandMenu extends CommandCore {
-  cmdInfo = this.prepareCommand(["info"], async () => {
-    const dialog: string[] = []
+  cmdInfo = this.prepareCommand(
+    ["info"],
+    "Show info about the local vault",
+    async () => {
+      const dialog: string[] = []
 
-    dialog.push(`Configs:`)
+      dialog.push(`Configs:`)
 
-    for (const [p, v] of Object.entries(
-      this.localStoreVaultConfigs.configs()
-    )) {
-      if (typeof v === "string") {
-        dialog.push(` - ${p}:`, `   ${v}`)
+      for (const [p, v] of Object.entries(
+        this.localStoreVaultConfigs.configs()
+      )) {
+        if (typeof v === "string") {
+          dialog.push(` - ${p}:`, `   ${v}`)
+        }
+        if (typeof v === "object") {
+          dialog.push(` - ${p}:`, `   ${JSON.stringify(v)}`)
+        }
       }
-      if (typeof v === "object") {
-        dialog.push(` - ${p}:`, `   ${JSON.stringify(v)}`)
-      }
+
+      console.log(dialog.join(EOL))
     }
+  )
 
-    console.log(dialog.join(EOL))
-  })
+  commandNewVault = this.prepareCommand(
+    ["vault", "create"],
+    "Create a vault",
+    async () => {
+      const store = await RemoteStore.create()
 
-  commandNewVault = this.prepareCommand(["vault", "create"], async () => {
-    const store = await RemoteStore.create()
+      const vault = await Vault.createVault({
+        store: store,
+        modulusLength: 512,
+      })
 
-    const vault = await Vault.createVault({
-      store: store,
-      modulusLength: 512,
-    })
+      await this.localVaultStore.pushVault(vault)
 
-    await this.localVaultStore.pushVault(vault)
+      console.log(`vault ${vault._title()} stored`)
+    }
+  )
 
-    console.log(`vault ${vault._title()} stored`)
-  })
+  listVaults = this.prepareCommand(
+    ["vault", "list"],
+    "List local vaults",
+    async () => {
+      const dialog: string[] = [
+        "Vaults:",
+        ...(this.localVaultStore
+          .read()
+          .vaults?.map(
+            (vault) =>
+              `  - ${vault.vault.publicKey.slice(0, 25)} (${vault.createdAt})`
+          ) ?? []),
+        "",
+      ]
 
-  listVaults = this.prepareCommand(["vault", "list"], async () => {
-    const dialog: string[] = [
-      "Vaults:",
-      ...(this.localVaultStore
-        .read()
-        .vaults?.map(
-          (vault) =>
-            `  - ${vault.vault.publicKey.slice(0, 25)} (${vault.createdAt})`
-        ) ?? []),
-      "",
-    ]
-
-    console.log(dialog.join(EOL))
-  })
+      console.log(dialog.join(EOL))
+    }
+  )
 
   infoVault = this.prepareCommand(
     ["vault", "info", argvVaultId],
+    "Show info vault",
     async (cmds, options) => {
       const vault = this.localVaultStore.getVaultByStartId(options["vault-id"])
 
@@ -104,6 +110,7 @@ class CommandMenu extends CommandCore {
 
   demoEditor = this.prepareCommand(
     ["vault", "editor", argvVaultId],
+    "Edit vault",
     async (cmds, options) => {
       const vaultstored = this.localVaultStore.getVaultByStartId(
         options["vault-id"]
@@ -168,15 +175,23 @@ class CommandMenu extends CommandCore {
     }
   )
 
-  initVaultRC = this.prepareCommand(["init", "vaultrc"], () => {
-    if (existsSync(vaultrcPath)) {
-      console.log(`Skipped. Already exists file ${vaultrcPath}`)
-      return
+  initVaultRC = this.prepareCommand(
+    ["init", "vaultrc"],
+    "Init vaultrc file",
+    () => {
+      if (existsSync(vaultrcPath)) {
+        console.log(`Skipped. Already exists file ${vaultrcPath}`)
+        return
+      }
+      writeFileSync(
+        path.resolve(`${homedir()}/.vaultrc`),
+        JSON.stringify({ $schema: vaultSchemaPath }, null, 2)
+      )
     }
-    writeFileSync(
-      path.resolve(`${homedir()}/.vaultrc`),
-      JSON.stringify({ $schema: vaultSchemaPath }, null, 2)
-    )
+  )
+
+  serve = this.prepareCommand(["server"], "Open the server registry", () => {
+    new AppServer().listen()
   })
 }
 

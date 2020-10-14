@@ -11,7 +11,8 @@ export interface VaultElement {
 interface VaultItem {
   remoteStore?: {
     id: string
-    publicKey: string
+    readkey?: string
+    publicKey?: string
     privateKey?: string
   }
   vault: ReturnType<Vault["export"]>

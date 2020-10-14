@@ -27,6 +27,7 @@ export class CommandCore {
   commands: string[]
   commandsHandlers: {
     routeCommand: CommandPath[]
+    description: string
     commandHandler: (
       commands: string[],
       commandOptions: { [k: string]: string | true }
@@ -65,12 +66,13 @@ export class CommandCore {
 
   prepareCommand = (
     routeCommand: CommandPath[],
+    description: string,
     commandHandler: (
       commands: string[],
       commandOptions: { [k: string]: string | true }
     ) => void
   ) => {
-    this.commandsHandlers.push({ routeCommand, commandHandler })
+    this.commandsHandlers.push({ routeCommand, description, commandHandler })
     return { routeCommand, commandHandler }
   }
 
@@ -89,16 +91,25 @@ export class CommandCore {
     await this.commandHelp.commandHandler([], {})
   }
 
-  commandHelp = this.prepareCommand(["help"], () => {
+  commandHelp = this.prepareCommand(["help"], "Show this help", () => {
+    const c = this.commandsHandlers.map(({ routeCommand, description }) => ({
+      command: routeCommand
+        .map((e) => (typeof e === "string" ? e : `<${e.label}>`))
+        .join(" "),
+      description,
+    }))
+
+    const pe = c.reduce(
+      (a, { command }) => (command.length > a ? command.length : a),
+      0
+    )
+
     const dialogHelp: string[] = [
       "Command:",
-      ...this.commandsHandlers.map(
-        (cmds) =>
-          `  ${cmds.routeCommand
-            .map((e) => (typeof e === "string" ? e : `<${e.label}>`))
-            .join(" ")}`
+      ...c.map(
+        ({ command, description }) =>
+          `  ${command.padEnd(pe, " ")}  ${description}`
       ),
-      "",
     ]
 
     console.log(dialogHelp.join(EOL))

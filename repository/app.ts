@@ -1,11 +1,5 @@
 import { Router } from "./Route"
-import {
-  useBodyJSON,
-  useQuery,
-  useUrl,
-  useUrlRegExpExec,
-  useBodyBuffer,
-} from "./useReq"
+import { useBodyJSON, useUrl, useUrlRegExpExec, useBodyBuffer } from "./useReq"
 import { VaultRepository } from "./VaultRepository"
 
 export class App {

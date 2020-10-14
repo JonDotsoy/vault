@@ -3,21 +3,13 @@ import { RepositoryClient } from "../repository/RepositoryClient"
 import { KeyPair } from "../vault/KeyPair"
 import { Store } from "./Store.interface"
 
-type RemoteStoreOptionsBase = {
-  repositoryClient?: RepositoryClient
+type RemoteStoreOptions = {
   id: string
+  repositoryClient?: RepositoryClient
+  readkey?: string
+  publicKey?: string
+  privateKey?: string
 }
-
-type RemoteStoreOptions = RemoteStoreOptionsBase &
-  (
-    | {
-        readkey: string
-      }
-    | {
-        publicKey: string
-        privateKey?: string
-      }
-  )
 
 export class RemoteStore implements Store {
   constructor(private options: RemoteStoreOptions) {}
@@ -27,13 +19,12 @@ export class RemoteStore implements Store {
   readonly id = this.options.id
   readonly readkey =
     "readkey" in this.options ? this.options.readkey : undefined
-  readonly keyPair =
-    "publicKey" in this.options
-      ? KeyPair.resolve({
-          publicKey: this.options.publicKey,
-          privateKey: this.options.privateKey,
-        })
-      : undefined
+  readonly keyPair = this.options.publicKey
+    ? KeyPair.resolve({
+        publicKey: this.options.publicKey,
+        privateKey: this.options.privateKey,
+      })
+    : undefined
   readonly publicKey = this.keyPair?.then((k) => k.publicKey)
   readonly privateKey = this.keyPair?.then((k) => k.privateKey)
 
