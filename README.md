@@ -19,13 +19,42 @@ const vault = await Vault.create<{ db: { uri: string } }>({
     readkey: vaultRemoteReadKey,
   }),
   publicKey: vaultPublicKey,
-});
+})
 
-const configs = await vault.readConfigs();
+const configs = await vault.readConfigs()
 
-const mongoUri = configs.db.uri;
+const mongoUri = configs.db.uri
 // ...
 ```
+
+## Quick starter
+
+You can start using vault in 2 steps.
+
+1. Create your first vault using `npx @jondotsoy/vault vault create` in your terminal. This command configures and creates the vault in your machine, accessible from `$HOME/.vault`.
+2. Configure the vault in your project installing vault using `npm i @jondotsoy/vault` and copy the next code in your source.
+
+```ts
+import { Vault, RemoteStore } from "@jondotsoy/vault"
+
+const vaultPublicKey = process.env.VAULT_PUBLICKEY
+const vaultRemoteId = process.env.VAULT_REMOTE_ID
+const vaultRemoteReadKey = process.env.VAULT_REMOTE_READKEY
+
+const vaultPromise = Vault.create({
+  store: new RemoteStore({
+    id: vaultRemoteId,
+    readkey: vaultRemoteReadKey,
+  }),
+  publicKey: vaultPublicKey,
+})
+
+export const getVault = () => vaultPromise
+```
+
+You can obtain the environment values with `npx @jondotsoy/vault vault info`. While you be are the manager vault, you will use that command without problems.
+
+> Remember this is only a sample that uses a singleton instance to read the vault. You can use your own implementation for your project.
 
 ## How to use (API)
 
