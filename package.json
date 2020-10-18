@@ -8,6 +8,9 @@
     "node": ">=12.18.0"
   },
   "engineStrict": true,
+  "config": {
+    "docker_image_name": "vault"
+  },
   "scripts": {
     "prepare": "tsc",
     "serve:repository": "npx . server",
@@ -17,7 +20,8 @@
     "build": "tsc",
     "build:watch": "tsc --watch",
     "lint": "npx prettier -c .",
-    "lint:write": "npx prettier -w ."
+    "lint:write": "npx prettier -w .",
+    "image:build": "docker build . --rm -t docker.pkg.github.com/jondotsoy/vault.js/$npm_package_config_docker_image_name:$npm_package_version --build-arg npm_package_name=$npm_package_name --build-arg npm_package_version=$npm_package_version"
   },
   "keywords": [
     "encryption",
