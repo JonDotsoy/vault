@@ -22,6 +22,8 @@ export const resolveDir = (pathlike: string) => {
     fs.mkdirSync(pathLikeNormalized, { recursive: true, mode: 0o700 })
   }
 
+  console.log(`Path resolved ${pathLikeNormalized}`)
+
   return pathLikeNormalized
 }
 
@@ -194,7 +196,9 @@ export class VaultRepositoryDB {
   ) {}
 
   private readonly cwdRegistries = resolveDir(
-    this.options?.cwdRegistries ?? `${homedir()}/._vault/vault_registries`
+    this.options?.cwdRegistries ??
+      process.env.VAULT_REGISTRIES ??
+      `${homedir()}/._vault/vault_registries`
   )
 
   private toPathStoredById(id: ID) {

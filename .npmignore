@@ -4,6 +4,7 @@
 .editorconfig
 tsconfig.json
 *.k*.json
+docs
 
 !*.js
 !*.js.map
@@ -12,3 +13,8 @@ tsconfig.json
 *.spec.ts
 *.spec.d.ts
 *.spec.js
+
+.dockerignore
+.prettierignore
+.prettierrc
+Dockerfile
