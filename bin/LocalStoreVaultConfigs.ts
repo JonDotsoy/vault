@@ -27,7 +27,7 @@ export class LocalStoreVaultConfigs {
 
   static defaultConfigs = {
     vaultrcPath: vaultrcPath,
-    url: "http://localhost:3000",
+    url: "http://localhost:4874",
     editor: parseOptionEditor("vim"),
   }
 

@@ -1,11 +1,8 @@
-import fs, { existsSync } from "fs"
-import { homedir, tmpdir } from "os"
-import { promisify, types } from "util"
-import path, { basename, sep } from "path"
-import { strict } from "assert"
-import { ID, IDLike } from "./id"
-import { KeyPair } from "../vault/KeyPair"
-import { count } from "console"
+import fs, { existsSync, constants } from "fs"
+import { homedir } from "os"
+import { promisify } from "util"
+import path, { basename } from "path"
+import { ID } from "./id"
 
 const readDir = promisify(fs.readdir)
 const readfile = promisify(fs.readFile)
@@ -225,7 +222,10 @@ export class VaultRepositoryDB {
     })
     await writeFile(
       pathend,
-      JSON.stringify(registry.toJSON({ fullVisible: true }))
+      JSON.stringify(registry.toJSON({ fullVisible: true })),
+      {
+        mode: constants.S_IRUSR + constants.S_IWUSR,
+      }
     )
     return { id }
   }

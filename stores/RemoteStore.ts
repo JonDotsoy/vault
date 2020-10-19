@@ -1,7 +1,9 @@
 import { throws } from "../lib/throws"
 import { RepositoryClient } from "../repository/RepositoryClient"
 import { KeyPair } from "../vault/KeyPair"
-import { Store } from "./Store.interface"
+import { Store, StoreExport } from "./Store.interface"
+import url from "url"
+import { LocalStoreVaultConfigs } from "../bin/LocalStoreVaultConfigs"
 
 type RemoteStoreOptions = {
   id: string
@@ -63,13 +65,79 @@ export class RemoteStore implements Store {
     return Promise.resolve(this.id)
   }
 
-  async export() {
+  async export(): Promise<StoreExport> {
     const keyPair = await this.keyPair
 
-    return {
-      id: this.id,
-      ...keyPair?.export(),
+    const { host, pathname, query, protocol } = url.parse(
+      this.repositoryClient.url,
+      true,
+      true
+    )
+
+    query.id = this.id
+
+    if (protocol?.startsWith("https")) {
+      query.ssl = "true"
     }
+
+    if (this.readkey) {
+      query.readkey = this.readkey
+    }
+
+    if (keyPair) {
+      const { publicKey, privateKey } = keyPair.export()
+      query.publicKey = publicKey
+      if (privateKey) {
+        query.privateKey = privateKey
+      }
+    }
+
+    return {
+      protocol: "vaultremotestore",
+      host,
+      pathname,
+      query,
+    }
+  }
+
+  static async from(a: StoreExport): Promise<RemoteStore> {
+    const queryCaptureString = (
+      query: url.UrlWithParsedQuery["query"] | undefined,
+      path: string
+    ) => {
+      const e = query?.[path]
+      if (!e) throw new Error(`Store without ${path}`)
+      if (Array.isArray(e)) throw new Error(``)
+      return e
+    }
+
+    const queryCaptureStringOrUndefined = (
+      query: url.UrlWithParsedQuery["query"] | undefined,
+      path: string
+    ) => {
+      const e = query?.[path]
+      if (!e) return undefined
+      if (Array.isArray(e)) throw new Error(``)
+      return e
+    }
+
+    const { id, readkey, publicKey, privateKey, ssl, ...q } = a.query ?? {}
+
+    return new RemoteStore({
+      id: queryCaptureString(a.query, "id"),
+      readkey: queryCaptureStringOrUndefined(a.query, "readkey"),
+      publicKey: queryCaptureStringOrUndefined(a.query, "publicKey"),
+      privateKey: queryCaptureStringOrUndefined(a.query, "privateKey"),
+      repositoryClient: new RepositoryClient({
+        url: url.format({
+          protocol: ssl === "true" ? "https:" : "http:",
+          slashes: true,
+          hostname: a.pathname,
+          pathname: a.pathname,
+          query: q,
+        }),
+      }),
+    })
   }
 
   static async create(options?: Partial<RemoteStoreOptions>) {

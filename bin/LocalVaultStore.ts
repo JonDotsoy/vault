@@ -1,7 +1,9 @@
 import { existsSync, readFileSync, writeFileSync } from "fs"
 import { homedir } from "os"
 import { RemoteStore } from "../stores/RemoteStore"
-import { Vault } from "../vault/Vault"
+import { Store, StoreExport } from "../stores/Store.interface"
+import { Vault, VaultExport } from "../vault/Vault"
+import url from "url"
 
 export interface VaultElement {
   publicKey: string
@@ -9,13 +11,8 @@ export interface VaultElement {
 }
 
 interface VaultItem {
-  remoteStore?: {
-    id: string
-    readkey?: string
-    publicKey?: string
-    privateKey?: string
-  }
-  vault: ReturnType<Vault["export"]>
+  store: StoreExport
+  vault: VaultExport
   createdAt: string
 }
 
@@ -37,20 +34,21 @@ export class LocalVaultStore {
 
   pushVault = async (vault: Vault) => {
     const b = this.read()
+
+    const nextVaultStore: VaultItem = {
+      vault: vault.export(),
+      store: await vault.store.export(),
+      createdAt: new Date().toJSON(),
+    }
+
     this.save({
       ...b,
-      vaults: [
-        ...(b.vaults ?? []),
-        {
-          vault: vault.export(),
-          remoteStore:
-            vault.store instanceof RemoteStore
-              ? await vault.store.export()
-              : undefined,
-          createdAt: new Date().toJSON(),
-        },
-      ],
+      vaults: [...(b.vaults ?? []), nextVaultStore],
     })
+  }
+
+  listVaults() {
+    return this.read().vaults ?? []
   }
 
   getVaultByStartId = (vaultId: any) => {

@@ -1,6 +1,6 @@
 import { EOL } from "os"
 import { LocalStoreVaultConfigs } from "./LocalStoreVaultConfigs"
-import { LocalVaultStore } from "./VaultElement"
+import { LocalVaultStore } from "./LocalVaultStore"
 
 type CommandPath = string | { label: string }
 

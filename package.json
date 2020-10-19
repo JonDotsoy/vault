@@ -15,7 +15,7 @@
     "prepare": "tsc",
     "serve:repository": "npx . server",
     "serve:repository:watch": "nodemon --exec npm run serve:repository",
-    "test": "mocha -r ts-node/register {vault,store,repository}/**/*.spec.ts",
+    "test": "mocha -r ts-node/register {vault,store,repository,bin}/**/*.spec.ts",
     "test:watch": "nodemon --ext ts --exec npm run test",
     "build": "tsc",
     "build:watch": "tsc --watch",

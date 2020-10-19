@@ -1,5 +1,5 @@
-import { existsSync, readFileSync, writeFileSync } from "fs"
-import { Store } from "./Store.interface"
+import { existsSync, readFileSync, writeFileSync, constants } from "fs"
+import { Store, StoreExport } from "./Store.interface"
 import { createHash } from "crypto"
 
 export class FileStore implements Store {
@@ -10,7 +10,9 @@ export class FileStore implements Store {
   ) {}
 
   async write(bf: Buffer) {
-    writeFileSync(this.options.pathStore, bf)
+    writeFileSync(this.options.pathStore, bf, {
+      mode: constants.S_IWUSR + constants.S_IRUSR,
+    })
   }
 
   async read() {
@@ -24,5 +26,22 @@ export class FileStore implements Store {
     return createHash("md5")
       .update(readFileSync(this.options.pathStore))
       .digest("hex")
+  }
+
+  async export(): Promise<StoreExport> {
+    return {
+      protocol: "vaultfilestore",
+      pathname: this.options.pathStore,
+    }
+  }
+
+  static async from(storeExport: StoreExport): Promise<FileStore> {
+    if (!storeExport.pathname) {
+      throw new TypeError("Store pathname is undefined")
+    }
+
+    return new FileStore({
+      pathStore: storeExport.pathname,
+    })
   }
 }

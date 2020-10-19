@@ -5,6 +5,11 @@ import { KeyPair, CreateKeyPairOptions } from "./KeyPair"
 
 type CreateVaultOptions = { store: Store } & CreateKeyPairOptions
 
+export type VaultExport = {
+  publicKey: string
+  privateKey?: string
+}
+
 export class Vault<T = any> {
   private constructor(
     private readonly options: {
@@ -40,7 +45,7 @@ export class Vault<T = any> {
   /**
    * Return the key pair on base64 format
    */
-  export(): { publicKey: string; privateKey?: string } {
+  export(): VaultExport {
     return this.keyPair.export()
   }
 

@@ -7,11 +7,12 @@ import { randomBytes } from "crypto"
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from "fs"
 import { Vault } from "../vault/Vault"
 import { RemoteStore } from "../stores/RemoteStore"
-import { throws } from "../lib/throws"
 import { promisify } from "util"
 import { vaultrcPath, vaultSchemaPath } from "./LocalStoreVaultConfigs"
 import path from "path"
 import { AppServer } from "../repository/AppServer"
+import { factoryStore } from "../stores/factoryStore"
+import url from "url"
 
 const argvVaultId = { label: "vault-id" }
 
@@ -89,15 +90,28 @@ class CommandMenu extends CommandCore {
         ``,
       ]
 
-      if (vault.remoteStore) {
-        const remoteStore = new RemoteStore(vault.remoteStore)
+      if (vault.store.protocol === "vaultremotestore") {
+        const remoteStore = await RemoteStore.from(vault.store)
+        const readkey = await remoteStore.getSignRead()
+        const { id, publicKey, privateKey, ...moreOptionsQ } =
+          vault.store.query ?? {}
         dialogs.push(
           `Remote Store ID:`,
           `  ${remoteStore.id}`,
           `Restore Public Key:`,
           `  ${remoteStore.publicKey}`,
           `Remote Read Sign:`,
-          `  ${await remoteStore.getSignRead()}`,
+          `  ${readkey}`,
+          `Store URI:`,
+          `  ${url.format({
+            slashes: true,
+            ...vault.store,
+            query: {
+              id,
+              readkey,
+              ...moreOptionsQ,
+            },
+          })}`,
           ``
         )
       }
@@ -122,9 +136,7 @@ class CommandMenu extends CommandCore {
       )
 
       const vault = await Vault.createVault({
-        store: vaultstored.remoteStore
-          ? new RemoteStore(vaultstored.remoteStore)
-          : throws(new TypeError("Editor not supported with this vault")),
+        store: await factoryStore(vaultstored.store),
         ...vaultstored.vault,
       })
 
