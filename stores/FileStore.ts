@@ -28,9 +28,11 @@ export class FileStore implements Store {
       .digest("hex")
   }
 
+  static readonly protocol = "vaultfilestore"
+
   async export(): Promise<StoreExport> {
     return {
-      protocol: "vaultfilestore",
+      protocol: FileStore.protocol,
       pathname: this.options.pathStore,
     }
   }

@@ -65,6 +65,8 @@ export class RemoteStore implements Store {
     return Promise.resolve(this.id)
   }
 
+  static readonly protocol = "vaultremotestore"
+
   async export(): Promise<StoreExport> {
     const keyPair = await this.keyPair
 
@@ -93,7 +95,7 @@ export class RemoteStore implements Store {
     }
 
     return {
-      protocol: "vaultremotestore",
+      protocol: RemoteStore.protocol,
       host,
       pathname,
       query,

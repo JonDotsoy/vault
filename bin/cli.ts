@@ -7,17 +7,21 @@ import { randomBytes } from "crypto"
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from "fs"
 import { Vault } from "../vault/Vault"
 import { RemoteStore } from "../stores/RemoteStore"
-import { promisify } from "util"
+import { inspect, promisify } from "util"
 import { vaultrcPath, vaultSchemaPath } from "./LocalStoreVaultConfigs"
 import path from "path"
 import { AppServer } from "../repository/AppServer"
 import { factoryStore } from "../stores/factoryStore"
 import url from "url"
 
+const throws = <T extends Error>(err: T) => {
+  throw err
+}
+
 const argvVaultId = { label: "vault-id" }
 
 class CommandMenu extends CommandCore {
-  cmdInfo = this.prepareCommand(
+  "info" = this.prepareCommand(
     ["info"],
     "Show info about the local vault",
     async () => {
@@ -40,7 +44,7 @@ class CommandMenu extends CommandCore {
     }
   )
 
-  commandNewVault = this.prepareCommand(
+  "vault create" = this.prepareCommand(
     ["vault", "create"],
     "Create a vault",
     async () => {
@@ -57,7 +61,7 @@ class CommandMenu extends CommandCore {
     }
   )
 
-  listVaults = this.prepareCommand(
+  "vault list" = this.prepareCommand(
     ["vault", "list"],
     "List local vaults",
     async () => {
@@ -76,53 +80,104 @@ class CommandMenu extends CommandCore {
     }
   )
 
-  infoVault = this.prepareCommand(
+  "vault export <vaultid>" = this.prepareCommand(
+    ["vault", "export", argvVaultId],
+    "export configs vault",
+    async (_, options) => {
+      const out = options.out
+
+      const vault =
+        this.localVaultStore.getVaultByStartId(options["vault-id"]) ??
+        throws(new Error("Cannot found vault"))
+      const remoteStore = await RemoteStore.from(vault.store)
+
+      const readkey = await remoteStore.getSignRead()
+      const { id, readkey: _readkey, publicKey, privateKey, ...moreOptionsQ } =
+        vault.store.query ?? {}
+
+      const storeUrl = url.format({
+        slashes: true,
+        ...vault.store,
+        query: {
+          id,
+          readkey,
+          ...moreOptionsQ,
+        },
+      })
+
+      const obj = {
+        PublicKey: vault.vault.publicKey,
+        Store: storeUrl,
+      }
+
+      if (typeof out === "string") {
+        const pathout = path.resolve(`${process.cwd()}/${out}`)
+        console.log(`# file stored on ${pathout}`)
+        writeFileSync(pathout, JSON.stringify(obj, null, 2))
+      } else {
+        console.log(`# Use param \`--out={path}\` to save config`)
+      }
+
+      console.log(JSON.stringify(obj, null, 2))
+    }
+  )
+
+  "vault info <vaultid>" = this.prepareCommand(
     ["vault", "info", argvVaultId],
     "Show info vault",
     async (cmds, options) => {
+      const outputjson = options.json ?? false
+
       const vault = this.localVaultStore.getVaultByStartId(options["vault-id"])
 
       if (!vault) return
 
-      const dialogs: string[] = [
-        `Vault Public Key:`,
-        `  ${vault.vault.publicKey}`,
-        ``,
-      ]
+      const els: { [k: string]: any } = {
+        "Vault Public Key": vault.vault.publicKey,
+      }
 
       if (vault.store.protocol === "vaultremotestore") {
         const remoteStore = await RemoteStore.from(vault.store)
         const readkey = await remoteStore.getSignRead()
         const { id, publicKey, privateKey, ...moreOptionsQ } =
           vault.store.query ?? {}
-        dialogs.push(
-          `Remote Store ID:`,
-          `  ${remoteStore.id}`,
-          `Restore Public Key:`,
-          `  ${remoteStore.publicKey}`,
-          `Remote Read Sign:`,
-          `  ${readkey}`,
-          `Store URI:`,
-          `  ${url.format({
-            slashes: true,
-            ...vault.store,
-            query: {
-              id,
-              readkey,
-              ...moreOptionsQ,
-            },
-          })}`,
-          ``
-        )
+
+        els["Remote Store ID"] = remoteStore.id
+        els["Remote Public Key"] = (
+          await remoteStore.keyPair
+        )?.exportPublicKey()
+        els["Remote Private Key"] = (
+          await remoteStore.keyPair
+        )?.exportPrivateKey()
+        els["Remote Read Sign"] = readkey
+        els["Remote Store URI"] = url.format({
+          slashes: true,
+          ...vault.store,
+          query: {
+            id,
+            readkey,
+            ...moreOptionsQ,
+          },
+        })
       }
 
-      dialogs.push(`Created At:`, `  ${vault.createdAt}`)
+      els["Created At"] = vault.createdAt
 
-      console.log(dialogs.join("\n"))
+      if (outputjson) {
+        const e = Object.entries(els).reduce((acum, [k, v]) => {
+          acum[k.replace(/\s+([A-Z])/g, "$1")] = v
+          return acum
+        }, {} as any)
+        console.log(JSON.stringify(e, null, 4))
+      } else {
+        Object.entries(els).forEach(([k, v]) => {
+          console.log(`${k.padEnd(20, " ")} = ${v}`)
+        })
+      }
     }
   )
 
-  demoEditor = this.prepareCommand(
+  "vault editor <vaultid>" = this.prepareCommand(
     ["vault", "editor", argvVaultId],
     "Edit vault",
     async (cmds, options) => {
@@ -187,7 +242,7 @@ class CommandMenu extends CommandCore {
     }
   )
 
-  initVaultRC = this.prepareCommand(
+  "init vaultrc" = this.prepareCommand(
     ["init", "vaultrc"],
     "Init vaultrc file",
     () => {
@@ -202,7 +257,7 @@ class CommandMenu extends CommandCore {
     }
   )
 
-  serve = this.prepareCommand(["server"], "Open the server registry", () => {
+  "server" = this.prepareCommand(["server"], "Open the server registry", () => {
     new AppServer().listen()
   })
 }
