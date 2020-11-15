@@ -96,7 +96,7 @@ describe("Vault", () => {
     })
   })
 
-  it("should read options with only public key", async () => {
+  it.skip("should read options with only public key", async () => {
     const vault = await Vault.createVault({
       store: new FileStore({ pathStore: p(".test5") }),
       publicKey: publicKey,
